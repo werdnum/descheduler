@@ -82,6 +82,9 @@ func New(args runtime.Object, handle frameworktypes.Handle) (frameworktypes.Plug
 				if containerStatus.State.Waiting != nil && states.Has(containerStatus.State.Waiting.Reason) {
 					return true
 				}
+				if containerStatus.State.Terminated != nil && states.Has(containerStatus.State.Terminated.Reason) {
+					return true
+				}
 			}
 
 			return false
