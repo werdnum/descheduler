@@ -210,6 +210,29 @@ func TestPodLifeTime(t *testing.T) {
 			expectedEvictedPodCount: 1,
 		},
 		{
+			description: "Two pods, one with terminated container in Error state. 1 should be evicted.",
+			args: &PodLifeTimeArgs{
+				MaxPodLifeTimeSeconds: &maxLifeTime,
+				States:                []string{"Error"},
+			},
+			pods: []*v1.Pod{
+				p9,
+				test.BuildTestPod("container-creating-stuck", 0, 0, node1.Name, func(pod *v1.Pod) {
+					pod.Status.ContainerStatuses = []v1.ContainerStatus{
+						{
+							State: v1.ContainerState{
+								Terminated: &v1.ContainerStateTerminated{Reason: "Error"},
+							},
+						},
+					}
+					pod.OwnerReferences = ownerRef1
+					pod.ObjectMeta.CreationTimestamp = olderPodCreationTime
+				}),
+			},
+			nodes:                   []*v1.Node{node1},
+			expectedEvictedPodCount: 1,
+		},
+		{
 			description: "Two pods, one with PodInitializing state. 1 should be evicted.",
 			args: &PodLifeTimeArgs{
 				MaxPodLifeTimeSeconds: &maxLifeTime,
